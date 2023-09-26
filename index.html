@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoTakeMe URL Shortnener</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: all 0.125s ease-in-out;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      line-height: 1.2;
+    }
+
+    body {
+      font-family: sans-serif;
+      color: #222;
+      background-color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      color: #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin: 0;
+      margin-right: 0.5rem;
+      font-weight: 500;
+    }
+
+    #pad-header {
+      height: 4.5rem;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .form-wrap {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      max-width: 100%;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+      width: 100%;
+    }
+
+    main section {
+      margin: 1rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      max-width: 40rem;
+    }
+
+    .field {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0.25rem;
+    }
+
+    .field label {
+      width: 10rem;
+      margin-right: 1rem;
+    }
+
+    .field input {
+      flex-grow: 1;
+      min-width: 70%;
+      border-radius: 0.25rem;
+      display: block;
+      background-clip: padding-box;
+      line-height: 1.5;
+      border: 1px solid #ced4da;
+      padding: .375rem .75rem;
+
+      /* padding: .375rem .75rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #495057;
+      background-color: #fff;
+      background-clip: padding-box;
+      border: 1px solid #ced4da;
+      border-radius: .25rem;
+      transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; */
+    }
+
+    .button {
+      font-size: 1.25em;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      background-color: #333;
+      color: #eee;
+      cursor: pointer;
+      text-decoration: none;
+      border: 0.1rem solid #eee;
+      display: block;
+    }
+
+    .button:hover {
+      background-color: #444;
+    }
+
+
+    .message {
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      width: 100%;
+      border: 1px solid;
+    }
+
+    .error {
+      background-color: #fee;
+      color: #f00;
+      border-color: #f00;
+    }
+
+    .success {
+      background-color: #efe;
+      color: #0f0;
+      border-color: #0f0;
+    }
+
+    .spacer {
+      margin-top: 2rem;
+    }
+
+    .about-text {
+      text-align: justify;
+    }
+
+    footer {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      background-color: #333;
+      color: #eee;
+      padding: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: #eee;
+      text-decoration: none;
+      margin: 0.125rem 0.5rem;
+      font-size: 0.75rem;
+    }
+
+    .footer-link:hover {
+      color: #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>GoTakeMe</h1>
+  </header>
+
+  <main>
+    <div id="pad-header"></div>
+    <section>
+      <h2>A Simple and Private URL shortener</h2>
+    </section>
+    <section id="app">
+      <div class="form-wrap">
+        <form action="/shorten" method="POST">
+          <div class="field">
+            <h2>Shorten a Link</h2>
+          </div>
+          {{if .ErrorCreate}}
+          <div class="field">
+            <div class="message error">{{ .ErrorCreate}}</div>
+          </div>
+          {{end}}
+          <div class="field">
+            <label for="url">URL to shorten</label>
+            <input type="text" name="url" id="url" placeholder="https://www.example.com/very/long/link?goes=here">
+          </div>
+          <div class="field">
+            <label for="slug">Preferred short link</label>
+            <input type="text" name="slug" id="preffered slug" placeholder="birthday-party">
+          </div>
+          <div class="field">
+            <label for="password">Deletion Password</label>
+            <input type="password" name="password" placeholder="********">
+          </div>
+          <div class="field">
+            <label for="password-confirm">Confirm Password</label>
+            <input type="password" name="password-confirm" placeholder="********">
+          </div>
+          <div class="field">
+            <input type="submit" value="Shorten Link" class="button">
+          </div>
+          {{if .SuccessCreate}}
+          <div class="field">
+            <div class="message success">{{ .SuccessCreate}}</div>
+          </div>
+          {{end}}
+        </form>
+      </div>
+      <div class="spacer"></div>
+      <div class="form-wrap">
+        <form action="/delete" method="post">
+          <div class="field">
+            <h2>Delete a shortlink</h2>
+          </div>
+          {{if .ErrorDelete}}
+          <div class="field">
+            <div class="message error">{{ .ErrorDelete}}</div>
+          </div>
+          {{end}}
+          <div class="field">
+            <label for="slug">Short Link</label>
+            <input type="text" name="slug" id="slug" placeholder="birthday-party">
+          </div>
+          <div class="field">
+            <label for="password">Deletion Password</label>
+            <input type="password" name="password" placeholder="********">
+          </div>
+          <div class="field">
+            <input type="submit" value="Delete Link" class="button">
+          </div>
+          {{if .SuccessDelete}}
+          <div class="field">
+            <div class="message success">{{ .SuccessDelete}}</div>
+          </div>
+          {{end}}
+        </form>
+      </div>
+    </section>
+    <section>
+
+    </section>
+
+    <section>
+      <h2>
+        About
+      </h2>
+      <div class="about-text">
+        GoTakeMe is a simple, open-source URL shortener written in Go.
+        <br>
+        It does not collect any
+        personal information.
+        If you attempt to create or delete a short link, a hash of your IP address will be stored
+        in memory for 1 minute, for the purpose of rate limiting.
+        <br>
+        You may not attempt to create / delete more than 5 short links per minute.
+        This site does not use any cookies, analytics, or tracking scripts. As no personal information is collected, we
+        can't share any data with third parties.
+        <br>
+        All link data is indexed by and encrypted with the hash of the short link. This means, that even the site
+        administrator can not know the redirect targets, without knowing the short link.
+      </div>
+    </section>
+  </main>
+  <footer>
+    <a href="{{ .AbuseUrl }}" class="footer-link">Report Abuse / request short link deletion</a>
+    <a href="/legal" class="footer-link">Legal &amp; imprint</a>
+    <a href="https://github.com/x-zvf/gotakeme" class="footer-link">Source Code &amp; Docs</a>
+  </footer>
+</body>
+
+</html>

@@ -7,6 +7,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/gob"
+	"encoding/hex"
+	"errors"
 	"log"
 
 	badger "github.com/dgraph-io/badger/v3"
@@ -18,6 +20,10 @@ type Record struct {
 	RedirectTo   string
 	PasswordHash []byte
 }
+
+var ErrorShortlinkNotFound = errors.New("shortlink not found")
+var ErrorShortlinkAlreadyExists = errors.New("shortlink already exists")
+var ErrorPasswordIncorrect = errors.New("password incorrect")
 
 // from: https://itnext.io/encrypt-data-with-a-password-in-go-b5366384e291
 func encrypt(key, data []byte) ([]byte, error) {
@@ -58,22 +64,23 @@ func decrypt(key, data []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
-func calculateEncryptionKey(shortlink string) []byte {
+func calculateEncryptionKey(shortlink *string) []byte {
 	hash := sha256.New()
-	hash.Write([]byte(shortlink))
-	hash.Write([]byte(shortlink))
+	hash.Write([]byte(*shortlink))
+	hash.Write([]byte(*shortlink))
 	shortlink_hash := hash.Sum(nil)
 	return shortlink_hash[:32]
 }
 
-func calculateDbKey(shortlink string) []byte {
+func calculateDbKey(shortlink *string) []byte {
 	hash := sha256.New()
-	hash.Write([]byte(shortlink))
+	hash.Write([]byte(*shortlink))
 	shortlink_hash := hash.Sum(nil)
-	return shortlink_hash
+	hex_digest := hex.EncodeToString(shortlink_hash)
+	return append([]byte("shortlink_"), []byte(hex_digest)...)
 }
 
-func encodeRecord(rec Record) ([]byte, error) {
+func encodeRecord(rec *Record) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(rec)
@@ -82,16 +89,17 @@ func encodeRecord(rec Record) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+
 }
 
-func AddRecord(db *badger.DB, shortlink, redirect, password string) bool {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func AddRecord(db *badger.DB, shortlink, redirect, password *string) bool {
+	hash, err := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Fatal(err)
 		return false
 	}
-	rec := Record{shortlink, redirect, hash}
-	serialized, err := encodeRecord(rec)
+	rec := Record{*shortlink, *redirect, hash}
+	serialized, err := encodeRecord(&rec)
 	if err != nil {
 		log.Fatal(err)
 		return false
@@ -103,7 +111,12 @@ func AddRecord(db *badger.DB, shortlink, redirect, password string) bool {
 	}
 	insertAt := calculateDbKey(shortlink)
 	err = db.Update(func(txn *badger.Txn) error {
-		return txn.Set(insertAt, encrypted)
+		_, err := txn.Get(insertAt)
+		if err == badger.ErrKeyNotFound {
+			return txn.Set(insertAt, encrypted)
+		} else {
+			return ErrorShortlinkAlreadyExists
+		}
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -112,7 +125,7 @@ func AddRecord(db *badger.DB, shortlink, redirect, password string) bool {
 	return true
 }
 
-func GetRecord(db *badger.DB, shortlink string) (*Record, error) {
+func GetRecord(db *badger.DB, shortlink *string) (*Record, error) {
 	var encoded []byte
 	key := calculateDbKey(shortlink)
 	err := db.View(func(txn *badger.Txn) error {
@@ -127,6 +140,9 @@ func GetRecord(db *badger.DB, shortlink string) (*Record, error) {
 		}
 		return nil
 	})
+	if err == badger.ErrKeyNotFound {
+		return nil, ErrorShortlinkNotFound
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -144,16 +160,15 @@ func GetRecord(db *badger.DB, shortlink string) (*Record, error) {
 	return &rec, nil
 }
 
-func DeleteRecord(db *badger.DB, shortlink, password string) bool {
+func DeleteRecord(db *badger.DB, shortlink, password *string) error {
 	rec, err := GetRecord(db, shortlink)
 	if err != nil {
-		log.Fatal(err)
-		return false
+		return ErrorShortlinkNotFound
 	}
-	err = bcrypt.CompareHashAndPassword(rec.PasswordHash, []byte(password))
+	err = bcrypt.CompareHashAndPassword(rec.PasswordHash, []byte(*password))
 	if err != nil {
-		log.Fatal(err)
-		return false
+
+		return ErrorPasswordIncorrect
 	}
 	key := calculateDbKey(shortlink)
 	err = db.Update(func(txn *badger.Txn) error {
@@ -161,12 +176,12 @@ func DeleteRecord(db *badger.DB, shortlink, password string) bool {
 	})
 	if err != nil {
 		log.Fatal(err)
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
-func DeleteRecordDisregardingPassword(db *badger.DB, shortlink string) bool {
+func DeleteRecordDisregardingPassword(db *badger.DB, shortlink *string) bool {
 	key := calculateDbKey(shortlink)
 	err := db.Update(func(txn *badger.Txn) error {
 		return txn.Delete(key)

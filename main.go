@@ -1,11 +1,23 @@
 package main
 
 import (
-	"flag"
+	"fmt"
+	"html"
+	"html/template"
 	"log"
+	"net/http"
+	"strings"
 
 	badger "github.com/dgraph-io/badger/v3"
 )
+
+type MainTemplateData struct {
+	ErrorCreate   string
+	ErrorDelete   string
+	SuccessCreate string
+	SuccessDelete string
+	AbuseUrl      string
+}
 
 func main() {
 	db, err := badger.Open(badger.DefaultOptions("/tmp/badger"))
@@ -14,26 +26,36 @@ func main() {
 		return
 	}
 	defer db.Close()
-
-	shortlink := flag.String("s", "shortlink", "Shortlink to add")
-	target := flag.String("t", "target", "Target URL")
-	delete_password := flag.String("p", "password", "Password to delete the shortlink")
-	get := flag.Bool("get", false, "Get the shortlink")
-	flag.Parse()
-	if *get {
-		rec, err := GetRecord(db, *shortlink)
+	http.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello, from Admin: %q", html.EscapeString(r.URL.Path))
+	})
+	http.HandleFunc("/s/", func(w http.ResponseWriter, r *http.Request) {
+		shortlink := strings.SplitN(r.URL.Path, "/", 3)[2]
+		fmt.Fprintf(w, "Hello, redirecting: %s", html.EscapeString(shortlink))
+	})
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		tmplt, err := template.ParseFiles("index.html")
 		if err != nil {
-			log.Fatal(err)
+			w.WriteHeader(500)
+			log.Println(err)
 			return
 		}
-		log.Printf("Shortlink: %s\nRedirect: %s\n", rec.Shortlink, rec.RedirectTo)
-		return
-	}
 
-	if *shortlink == "" || *target == "" || *delete_password == "" {
-		log.Fatal("Missing required arguments")
-		return
-	}
-	AddRecord(db, *shortlink, *target, *delete_password)
+		data := MainTemplateData{
+			ErrorCreate:   "The requested short link is already taken.",
+			ErrorDelete:   "The deletion password is incorrect.",
+			AbuseUrl:      "mailto:admin@example.com",
+			SuccessCreate: "The short link was created successfully.",
+			SuccessDelete: "The short link was deleted successfully.",
+		}
+
+		err = tmplt.Execute(w, data)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Println(err)
+			return
+		}
+	})
+	http.ListenAndServe(":8080", nil)
 
 }

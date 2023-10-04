@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"log"
+	"math/big"
 
 	badger "github.com/dgraph-io/badger/v3"
 	"golang.org/x/crypto/bcrypt"
@@ -125,6 +126,62 @@ func AddRecord(db *badger.DB, shortlink, redirect, password *string) bool {
 	return true
 }
 
+func DoesShortlinkExist(db *badger.DB, shortlink *string) bool {
+	key := calculateDbKey(shortlink)
+	err := db.View(func(txn *badger.Txn) error {
+		_, err := txn.Get(key)
+		return err
+	})
+	if err == badger.ErrKeyNotFound {
+		return false
+	}
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return true
+}
+
+var alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789-_")
+
+func IsValidShortlink(shortlink *string) bool {
+	if len(*shortlink) < 3 || len(*shortlink) > 32 {
+		return false
+	}
+	for _, c := range *shortlink {
+		// yes this is O(n^2), but it won't really matter
+		found := false
+		for _, a := range alphabet {
+			if a == c {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func GenerateRandomShortlink(db *badger.DB) string {
+
+	for {
+		b := make([]rune, 8)
+		for i := range b {
+			n, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphabet))))
+			if err != nil {
+				log.Fatal(err)
+			}
+			b[i] = alphabet[n.Int64()]
+		}
+		shortlink := string(b)
+		if !DoesShortlinkExist(db, &shortlink) {
+			return shortlink
+		}
+	}
+}
+
 func GetRecord(db *badger.DB, shortlink *string) (*Record, error) {
 	var encoded []byte
 	key := calculateDbKey(shortlink)
@@ -181,14 +238,14 @@ func DeleteRecord(db *badger.DB, shortlink, password *string) error {
 	return nil
 }
 
-func DeleteRecordDisregardingPassword(db *badger.DB, shortlink *string) bool {
+func DeleteRecordDisregardingPassword(db *badger.DB, shortlink *string) error {
 	key := calculateDbKey(shortlink)
 	err := db.Update(func(txn *badger.Txn) error {
 		return txn.Delete(key)
 	})
 	if err != nil {
 		log.Fatal(err)
-		return false
+		return err
 	}
-	return true
+	return nil
 }

@@ -15,49 +15,27 @@
       line-height: 1.2;
     }
 
+    html {
+      --text: #333333;
+      --background: #ededed;
+      --primary: #19bdcc;
+      --secondary: #df0f0f;
+      --accent: #18cf36;
+    }
+
     body {
       font-family: sans-serif;
-      color: #222;
-      background-color: #eee;
+      color: var(--text);
+      background-color: var(--background);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
 
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #333;
-      color: #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem;
-    }
-
-    h1 {
-      font-size: 2rem;
-      margin: 0;
-      margin-right: 0.5rem;
-      font-weight: 500;
-    }
-
-    #pad-header {
-      height: 4.5rem;
-    }
-
     #app {
       display: flex;
       flex-direction: column;
-    }
-
-    .center {
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     .form-wrap {
@@ -106,34 +84,22 @@
       display: block;
       background-clip: padding-box;
       line-height: 1.5;
-      border: 1px solid #ced4da;
+      border: 0px;
       padding: .375rem .75rem;
-
-      /* padding: .375rem .75rem;
-      font-size: 1rem;
-      line-height: 1.5;
-      color: #495057;
-      background-color: #fff;
-      background-clip: padding-box;
-      border: 1px solid #ced4da;
-      border-radius: .25rem;
-      transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; */
     }
 
     .button {
       font-size: 1.25em;
       padding: 0.75rem;
       border-radius: 0.25rem;
-      background-color: #333;
-      color: #eee;
+      background-color: var(--primary);
       cursor: pointer;
       text-decoration: none;
-      border: 0.1rem solid #eee;
       display: block;
     }
 
     .button:hover {
-      background-color: #444;
+      color: var(--background);
     }
 
 
@@ -141,19 +107,23 @@
       padding: 0.5rem;
       border-radius: 0.25rem;
       width: 100%;
-      border: 1px solid;
+      color: var(--background);
+      font-size: 1.25rem;
+      /* border: 1px solid; */
+    }
+
+    .message a {
+      color: var(--background);
+      text-decoration: underline;
     }
 
     .error {
-      background-color: #fee;
-      color: #f00;
-      border-color: #f00;
+      background-color: var(--secondary);
+      /* border-color: var(--secondary); */
     }
 
     .success {
-      background-color: #efe;
-      color: #0f0;
-      border-color: #0f0;
+      background-color: var(--accent);
     }
 
     .spacer {
@@ -189,12 +159,7 @@
 </head>
 
 <body>
-  <!-- <header>
-    <h1>GoTakeMe</h1>
-  </header> -->
-
   <main>
-    <!-- <div id="pad-header"></div> -->
     <section>
       <h2>A Simple and Private URL shortener</h2>
     </section>
@@ -232,8 +197,9 @@
           </div>
           {{if .SuccessCreate }}
           <div class="field">
-            <div class="message success">{{ .SuccessCreate }}
-              <a href="{{ .SuccessShortLink }}"> {{ .SuccessShortLink }}</a>
+            <div class="message success">
+              {{ .SuccessCreate }}
+              <a class="link" href="{{ .SuccessShortLink }}"> {{ .SuccessShortLink }}</a>
             </div>
           </div>
           {{end}}
@@ -276,16 +242,16 @@
       </h2>
       <div class="about-text">
         GoTakeMe is a simple, open-source URL shortener written in Go.
-        <br>
+        <!-- <br> -->
         It does not collect any
         personal information.
         If you attempt to create or delete a short link, a hash of your IP address will be stored
         in memory for 1 minute, for the purpose of rate limiting.
-        <br>
+        <!-- <br> -->
         You may not attempt to create / delete more than 5 short links per minute.
         This site does not use any cookies, analytics, or tracking scripts. As no personal information is collected, we
         can't share any data with third parties.
-        <br>
+        <!-- <br> -->
         All link data is indexed by and encrypted with the hash of the short link. This means, that even the site
         administrator can not know the redirect targets, without knowing the short link.
       </div>

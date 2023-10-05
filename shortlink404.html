@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Found</title>
+    <style>
+        html {
+            --text: #333333;
+            --background: #ededed;
+            --primary: #19bdcc;
+            --secondary: #df0f0f;
+            --accent: #18cf36;
+            font-family: sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        a {
+            color: var(--text);
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            text-decoration: none;
+            /* display: block; */
+            background-color: var(--primary);
+        }
+
+        a:hover {
+            color: var(--background);
+        }
+
+        q {
+            color: var(--primary);
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>
+        The shortlink <q>{{ .ShortLink }} </q> you are trying to access does not exist.
+    </h2>
+    <a href="/">Shorten a link</a>
+</body>
+
+</html>

@@ -164,18 +164,21 @@ func IsValidShortlink(shortlink *string) bool {
 	return true
 }
 
-func GenerateRandomShortlink(db *badger.DB) string {
-
-	for {
-		b := make([]rune, 8)
-		for i := range b {
-			n, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphabet))))
-			if err != nil {
-				log.Fatal(err)
-			}
-			b[i] = alphabet[n.Int64()]
+func GenerateRandomString(length int) string {
+	b := make([]rune, length)
+	for i := range b {
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphabet))))
+		if err != nil {
+			log.Fatal(err)
 		}
-		shortlink := string(b)
+		b[i] = alphabet[n.Int64()]
+	}
+	return string(b)
+}
+
+func GenerateRandomShortlink(db *badger.DB) string {
+	for {
+		shortlink := GenerateRandomString(8)
 		if !DoesShortlinkExist(db, &shortlink) {
 			return shortlink
 		}

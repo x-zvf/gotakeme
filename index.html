@@ -102,6 +102,10 @@
       color: var(--background);
     }
 
+    .delete {
+      background-color: var(--secondary);
+    }
+
 
     .message {
       padding: 0.5rem;
@@ -225,7 +229,7 @@
             <input type="password" name="password" placeholder="********">
           </div>
           <div class="field">
-            <input type="submit" value="Delete Link" class="button">
+            <input type="submit" value="Delete Link" class="button delete">
           </div>
           {{if .SuccessDelete}}
           <div class="field">

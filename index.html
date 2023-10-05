@@ -16,17 +16,28 @@
     }
 
     html {
-      --text: #333333;
-      --background: #ededed;
-      --primary: #19bdcc;
-      --secondary: #df0f0f;
-      --accent: #18cf36;
+      --nord0: #2e3440;
+      --nord1: #3b4252;
+      --nord2: #434c5e;
+      --nord3: #4c566a;
+      --nord4: #d8dee9;
+      --nord5: #e5e9f0;
+      --nord6: #eceff4;
+      --nord7: #8fbcbb;
+      --nord8: #88c0d0;
+      --nord9: #81a1c1;
+      --nord10: #5e81ac;
+      --nord11: #bf616a;
+      --nord12: #d08770;
+      --nord13: #ebcb8b;
+      --nord14: #a3be8c;
+      --nord15: #b48ead;
     }
 
     body {
       font-family: sans-serif;
-      color: var(--text);
-      background-color: var(--background);
+      color: var(--nord0);
+      background-color: var(--nord6);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -92,18 +103,23 @@
       font-size: 1.25em;
       padding: 0.75rem;
       border-radius: 0.25rem;
-      background-color: var(--primary);
       cursor: pointer;
       text-decoration: none;
       display: block;
+      color: var(--nord6);
+      background-color: var(--nord8);
     }
 
     .button:hover {
-      color: var(--background);
+      color: var(--nord5);
     }
 
     .delete {
-      background-color: var(--secondary);
+      background-color: var(--nord11);
+    }
+
+    .delete:hover {
+      color: var(--nord5);
     }
 
 
@@ -111,23 +127,23 @@
       padding: 0.5rem;
       border-radius: 0.25rem;
       width: 100%;
-      color: var(--background);
+      color: var(--nord6);
       font-size: 1.25rem;
       /* border: 1px solid; */
     }
 
     .message a {
-      color: var(--background);
+      color: var(--nord6);
       text-decoration: underline;
     }
 
     .error {
-      background-color: var(--secondary);
+      background-color: var(--nord11);
       /* border-color: var(--secondary); */
     }
 
     .success {
-      background-color: var(--accent);
+      background-color: var(--nord14);
     }
 
     .spacer {
@@ -143,21 +159,21 @@
       flex-direction: row;
       justify-content: flex-start;
       align-items: center;
-      background-color: #333;
-      color: #eee;
+      background-color: var(--nord1);
       padding: 0.5rem;
       flex-wrap: wrap;
     }
 
     .footer-link {
-      color: #eee;
-      text-decoration: none;
+      color: var(--nord5);
+      text-decoration: underline solid transparent;
       margin: 0.125rem 0.5rem;
       font-size: 0.75rem;
     }
 
     .footer-link:hover {
-      color: #ccc;
+      color: var(--nord6);
+      text-decoration: underline solid var(--nord6);
     }
   </style>
 </head>
@@ -246,16 +262,10 @@
       </h2>
       <div class="about-text">
         GoTakeMe is a simple, open-source URL shortener written in Go.
-        <!-- <br> -->
         It does not collect any
         personal information.
-        If you attempt to create or delete a short link, a hash of your IP address will be stored
-        in memory for 1 minute, for the purpose of rate limiting.
-        <!-- <br> -->
-        You may not attempt to create / delete more than 5 short links per minute.
         This site does not use any cookies, analytics, or tracking scripts. As no personal information is collected, we
         can't share any data with third parties.
-        <!-- <br> -->
         All link data is indexed by and encrypted with the hash of the short link. This means, that even the site
         administrator can not know the redirect targets, without knowing the short link.
       </div>
@@ -263,7 +273,6 @@
   </main>
   <footer>
     <a href="{{ .AbuseUrl }}" class="footer-link">Report Abuse / request short link deletion</a>
-    <a href="/legal" class="footer-link">Legal &amp; imprint</a>
     <a href="https://github.com/x-zvf/gotakeme" class="footer-link">Source Code &amp; Docs</a>
   </footer>
 </body>

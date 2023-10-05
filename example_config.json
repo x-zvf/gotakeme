@@ -1,5 +1,5 @@
 {
-    "base_url": "https://gotakeme.to",
+    "base_url": "https://gotakeme.to/",
     "abuse_url": "mailto:abuse@example.com",
     "listen_on": "0.0.0.0:8080",
     "database_path": "/tmp/foo/bar/baz/fizz",
